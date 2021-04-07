@@ -1,0 +1,447 @@
+#  The Julia version of bison.simple
+#  DBM   Initial hack:        23 August  2014
+#        Update to Julia 0.7   7 October 2017
+#        More stuff           12 April   2018
+
+const YYEMPTY = -2
+const YYEOF = 0
+
+const YYTERROR = 1
+const YYERRCODE = 256
+
+if ! @isdefined(yydebug)
+    const yydebug = false
+end
+
+if ! @isdefined(location_tracking)
+    const location_tracking = false
+end
+
+macro yydprintf(fd, Arg)
+    if yydebug
+        return :(println($fd, $(esc(Arg))))
+    else
+        return nothing
+    end
+end
+
+# This conditionally adds all the code in blk based on
+# the value of the debug flag.  The global debug flag must be
+# defined before the macro defintion. 
+# 
+#  @debug_code begin
+#      x = 32
+#      y = 44
+#      println("x: $x  y: $y")
+#  end
+#
+macro debug_code(blk)
+    if yydebug
+        return esc(blk)
+    else
+        return nothing
+    end
+end
+
+macro track_location(blk)
+    if location_tracking
+        return esc(blk)
+    else
+        return nothing
+    end
+end
+
+# macro next_token(char, lval, lloc, lex)
+#     if location_tracking
+#         return :(($(esc(char)), $(esc(lval)), $(esc(lloc))) = $(esc(lex))())
+#     else
+#         return :(($(esc(char)), $(esc(lval))) = $(esc(lex))())
+#     end
+# end
+
+
+# YYINITDEPTH -- initial size of the parser's stacks.  We don't 
+# really change it, contrary to some of the comments still left 
+# below.
+const YYINITDEPTH = 1000
+
+
+# The optional parameter uopt is any user defined thing that can
+# be used in the parsing actions. 
+function yyparse(yylex, uopt=nothing)
+    #  Three stacks and their tools:
+    # `yyss': related to states,
+    # `yyvs': related to semantic values,
+    # `yyls': related to locations.
+
+    #  Refer to the stacks thru separate pointers, yyoverflow will now
+    #  just raise an error rather than reallocating them elsewhere.
+
+    #  The state stack. Needs to be integers for comparisons to work
+    #  so we don't bother with macro-tizing the type
+    yyss = OffsetArray(zeros(Int64, YYINITDEPTH), 0:(YYINITDEPTH-1))
+    yyssp::Int = 0
+
+    # The semantic value stack.  The easiest thing to do is to declare
+    # it in the .y spec as of type Any.
+    yyvs = OffsetArray(Vector{YYSType}(undef, YYINITDEPTH), 0:(YYINITDEPTH-1))
+    yyvsp::Int = 0
+    local yylval::YYSType
+
+    # The location stack.
+    @track_location begin
+        yyls = OffsetArray(zeros(YYLType, YYINITDEPTH), 0:(YYINITDEPTH-1))
+        yylsp = 0
+    end
+
+    yystacksize = YYINITDEPTH
+
+    # The variables used to return semantic value and location from the
+    # action routines.  
+    yyval = ""   # this needs to be one of the base types of the YYSType Union
+    @track_location begin
+        yyloc = zero(YYLType)
+        yylloc = zero(YYLType)  # source position of look ahead
+    end
+    
+    # When reducing, the number of symbols on the RHS of the reduced
+    # rule
+    yylen = 0
+    yyn::Int = 0
+
+    @yydprintf(stderr, "Starting parse")
+
+    yystate = 0
+
+    # Number of tokens to shift before error messages enabled.  
+    yyerrstatus = 0
+    yynerrs = 0
+
+    # YYEMPTY causes a token to be read.
+    yychar::Int = YYEMPTY             
+
+    # Lookahead token as an internal (translated) token number.  
+    yychar1::Int = 0
+
+    # Initialize stack pointers.
+    # Waste one element of value and location stack
+    # so that they stay on the same level as the state stack.
+    # The wasted elements are never initialized.  
+
+    yyssp = 0
+    yyvsp = 0
+    yylsp = 0
+
+    # OK we could have swapped the ordering of YYSETSTATE and YYNEWSTATE
+    # but I kept them the same to match bison.simple (ha!)
+    @goto YYSETSTATE
+
+    # State Machine Starts here
+    # yynewstate -- Push a new state, which is found in yystate.
+    @label YYNEWSTATE
+        # In all cases, when you get here, the value and location stacks
+        # have just been pushed. so pushing a state here evens the stacks.
+        yyssp += 1
+        @goto YYSETSTATE
+
+    @label YYSETSTATE
+        yyss[yyssp] = yystate
+
+        if yyssp >= yystacksize
+            # Get the current used size of the three stacks, in elements.  
+            yysize = yyssp
+          
+            yyssp = yysize
+            yyvsp = yysize
+            yylsp = yysize
+          
+            @yydprintf(stderr, "Stack size increased to $yystacksize")
+          
+            if yyssp >= yystacksize
+                @goto YYABORTLAB
+            end
+        end
+
+        @yydprintf(stderr, "Entering state $yystate")
+        @goto YYBACKUP
+
+
+    @label YYBACKUP
+        # Do appropriate processing given the current state.
+        # Read a lookahead token if we need one and don't already have one.
+        # First try to decide what to do without reference to lookahead token.
+      
+        yyn = yypact[yystate]
+        if yyn == YYFLAG
+            @goto YYDEFAULT
+        end
+      
+        # Not known => get a lookahead token if don't already have one.
+      
+        # yychar is either YYEMPTY or YYEOF
+        # or a valid token in external form.
+      
+        if yychar == YYEMPTY
+            @yydprintf(stderr, "Reading a token: ")
+            
+            yychar, yylval, yylloc = yylex()
+            # this macro lets yylex only return two values if location
+            # tracking is turned off
+            #@next_token(yychar, yylval, yyloc, yylex)
+        end
+      
+        # Convert token to internal form (in yychar1) for indexing tables with
+        if yychar <= 0              # This means end of input.
+            yychar1 = 0
+            yychar = YYEOF          # Don't call YYLEX any more
+            @yydprintf(stderr, "Now at end of input.")
+        else
+            yychar1 = YYTRANSLATE(yychar)
+            @yydprintf(stderr, "Next token is $yychar ($(yytname[yychar1]))")
+            @yydprintf(stderr, "$yychar $yylval")
+        end
+      
+        yyn += yychar1
+        if yyn < 0 || yyn > YYLAST || yycheck[yyn] != yychar1
+            @goto YYDEFAULT
+        end
+      
+        yyn = yytable[yyn]
+      
+        # yyn is what to do for this token type in this state.
+        # Negative => reduce, -yyn is rule number.
+        # Positive => shift, yyn is new state.
+        # New state is final state => don't bother to shift,
+        # just return success.
+        # 0, or most negative number => error.
+      
+        if yyn < 0
+            if yyn == YYFLAG
+                @goto YYERRLAB
+            end
+            yyn = -yyn
+            @goto YYREDUCE
+        elseif yyn == 0
+            @goto YYERRLAB
+        end
+      
+        if yyn == YYFINAL
+            @goto YYACCEPTLAB
+        end
+      
+        # Shift the lookahead token.
+        @yydprintf(stderr, "Shifting token $yychar ($(yytname[yychar1])), ")
+      
+        # Discard the token being shifted unless it is eof.
+        if yychar != YYEOF
+            yychar = YYEMPTY
+        end
+      
+        # Now push the new values onto the stack
+        yyvs[yyvsp += 1] = yylval
+        @track_location begin
+            yyls[yylsp += 1] = yylloc
+        end
+        
+        # Count tokens shifted since error; after three, turn off error status.
+        yyerrstatus > 0 && (yyerrstatus -= 1)
+
+        yystate = yyn
+        @goto YYNEWSTATE
+
+
+    # YYDEFAULT -- do the default action for the current state.
+    @label YYDEFAULT
+        yyn = yydefact[yystate]
+        if yyn == 0
+            @goto YYERRLAB
+        end
+        @goto YYREDUCE
+
+
+    # YYREDUCE -- Do a reduction
+    @label YYREDUCE
+        # yyn is the number of a rule to reduce with.
+        yylen = yyr2[yyn]
+        # If YYLEN is nonzero, implement the default value of the action:
+        # `$$ = $1'.
+
+        # FIXME! Remove all of the following?
+        # Otherwise, the following line sets YYVAL to the semantic value of
+        # the lookahead token.  This behavior is undocumented and Bison
+        # users should not rely upon it.
+        #yyval = yyvs[yyvsp - yylen + 1]
+      
+        # Similarly for the default location.  Let the user run additional
+        # commands if for instance locations are ranges.
+        @track_location begin
+            yyloc = yyls[yylsp - yylen + 1]
+            yyloc.last_line   = yyls[yylsp].last_line
+            yyloc.last_column = yyls[yylsp].last_column
+        end
+      
+        @debug_code begin
+            println(stderr, "Reducing via rule $yyn (line $(yyrline[yyn])), ")
+            # Print the symbols being reduced, and their result.
+            yyi = yyprhs[yyn]
+            while yyrhs[yyi] > 0
+                print(stderr, "$(yytname[yyrhs[yyi]]) ")
+                yyi += 1
+            end
+            println(stderr, " -> $(yytname[yyr1[yyn]])")
+        end
+      
+%% actions # The action file replaces this line.
+
+        yyvsp -= yylen
+        yyssp -= yylen
+        yylsp -= yylen
+            
+        @debug_code begin
+            yyssp1 = 0 - 1
+            print(stderr, "state stack now")
+            while yyssp1 < yyssp
+                print(stderr, " $(yyss[yyssp1 += 1])")
+            end
+            print(stderr, "\n")
+        end
+      
+        yyvs[yyvsp += 1] = yyval
+        @track_location begin
+            yyls[yylsp += 1] = yyloc
+        end
+      
+        # Now `shift' the result of the reduction.  Determine what state
+        # that goes to, based on the state we popped back to and the rule
+        # number reduced by.
+        yyn = yyr1[yyn]
+      
+        yystate = yypgoto[yyn - YYNTBASE] + yyss[yyssp]
+        if yystate >= 0 && yystate <= YYLAST && yycheck[yystate] == yyss[yyssp]
+            yystate = yytable[yystate]
+        else
+            yystate = yydefgoto[yyn - YYNTBASE]
+        end
+      
+        @goto YYNEWSTATE
+
+    # YYERRLAB -- here on detecting error
+    @label YYERRLAB
+        # If not already recovering from an error, report this error.  
+        if yyerrstatus == 0
+            yynerrs += 1
+            write(stderr, "Parse error. Recovering...")
+        end
+        @goto YYERRLAB1
+
+
+    # YYERRLAB1 -- error raised explicitly by an action
+    @label YYERRLAB1
+        if yyerrstatus == 3
+            # If just tried and failed to reuse lookahead token after an
+            # error, discard it.
+        
+            # return failure if at end of input
+            if yychar == YYEOF
+                @goto YYABORTLAB
+            end
+            @yydprintf(stderr, "Discarding token $yychar ($(yytname[yychar1])).")
+            yychar = YYEMPTY
+        end
+         
+        # Else will try to reuse lookahead token after shifting the error
+        # token.
+        yyerrstatus = 3             # Each real token shifted decrements this 
+        @goto YYERRHANDLE
+          
+
+    # YYERRDEFAULT  Code in this state was labelled as "wrong" and commented
+    # out in the 1.35 version of bison
+    @label YYERRDEFAULT
+        # empty state 
+        @goto YYERRPOP
+
+
+    # YYERRPOP -- pop the current state because it cannot handle the
+    #  error token
+    @label YYERRPOP
+        if yyssp == 1
+            @goto YYABORTLAB
+        end
+        yyvsp -= 1
+        yystate = yyss[yyssp -= 1]
+        yylsp -= 1
+
+        @debug_code begin
+            yyssp1 = -1
+            print(stderr, "Error: state stack now")
+            while yyssp1 <= yyssp
+                print(stderr, "  $(yyss[yyssp1 += 1])")
+            end
+            print(stderr, "\n")
+        end
+
+        @goto YYERRHANDLE
+
+    # YYERRHANDLE
+    @label YYERRHANDLE
+        yyn = yypact[yystate]
+        if yyn == YYFLAG
+            @goto YYERRDEFAULT
+        end
+        yyn += YYTERROR
+        if yyn < 0 || yyn > YYLAST || yycheck[yyn] != YYTERROR
+            @goto YYERRDEFAULT
+        end 
+        yyn = yytable[yyn]
+        if yyn < 0
+            if yyn == YYFLAG
+                @goto YYERRPOP
+            end
+            yyn = -yyn
+            @goto YYREDUCE
+        elseif yyn == 0
+            @goto YYERRPOP
+        end
+              
+        if yyn == YYFINAL
+            @goto YYACCEPTLAB
+        end
+               
+        @yydprintf(stderr, "Shifting error token, ")
+      
+        yyvs[yyvsp += 1] = yylval
+        @track_location begin
+            yyls[yylsp += 1] = yylloc
+        end
+             
+        yystate = yyn
+        @goto YYNEWSTATE
+
+
+    # yyacceptlab -- YYACCEPT comes here.
+    @label YYACCEPTLAB
+        yyresult = 0
+        @goto YYRETURN
+
+
+    # yyabortlab -- YYABORT comes here.
+    @label YYABORTLAB
+        yyresult = 1
+        @goto YYRETURN
+
+
+    # YYOVERFLOWAB -- parser overflow comes here... uh but
+    # nothing comes here.  I must have "optimized" it away.
+    # Will need to look at that.
+    @label YYOVERFLOWLAB
+        write(stderr, "Parser stack overflow")
+        yyresult = 2
+        @goto YYRETURN
+
+
+    @label YYRETURN
+        return yyresult
+
+end
+

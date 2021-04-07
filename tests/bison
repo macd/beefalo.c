@@ -1,0 +1,11 @@
+#! /bin/sh
+# tests/bison.  Generated from bison.in by configure.
+# Wrapper around a non installed bison to make it work as an installed one.
+
+# We want to use the files shipped with Bison.
+BISON_SIMPLE='/home/macd/jlang/oldbeef/src/bison.simple'
+export BISON_SIMPLE
+BISON_HAIRY='/home/macd/jlang/oldbeef/src/bison.hairy'
+export BISON_HAIRY
+
+exec '/home/macd/jlang/oldbeef/src/bison' ${1+"$@"}
