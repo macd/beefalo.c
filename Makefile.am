@@ -19,7 +19,7 @@ AUTOMAKE_OPTIONS = 1.6 check-news readme-alpha dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
 #SUBDIRS = config intl po lib src doc m4 tests
-SUBDIRS = config lib src
+SUBDIRS = config intl lib src
 
 EXTRA_DIST = config/config.rpath  REFERENCES configure.bat OChangeLog Makefile.maint GNUmakefile
 
