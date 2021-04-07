@@ -163,7 +163,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.hin \
 	$(top_srcdir)/config/install-sh $(top_srcdir)/config/missing \
 	$(top_srcdir)/config/mkinstalldirs \
 	$(top_srcdir)/intl/Makefile.in ABOUT-NLS AUTHORS COPYING \
-	ChangeLog INSTALL NEWS README THANKS
+	ChangeLog INSTALL THANKS
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -332,7 +332,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.6 check-news readme-alpha dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = config intl po lib src doc m4 tests
+
+#SUBDIRS = config intl po lib src doc m4 tests
+SUBDIRS = config lib src
 EXTRA_DIST = config/config.rpath  REFERENCES configure.bat OChangeLog Makefile.maint GNUmakefile
 DISTCLEANFILES = intl/libintl.h
 move_if_change = $(srcdir)/config/move-if-change
