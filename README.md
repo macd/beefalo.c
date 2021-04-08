@@ -77,6 +77,12 @@ behavior of the lexer (context-sensitive lexing mentioned earlier).
 The best bet for generating a lexer in Julia at the present time seems to
 be the package Automa.jl (really a nice piece of work).
 
+## Supported platforms
+Well, you might think that resurrecting a 20 year old autotools based 
+build might not go well and you would be right. So the only supported 
+platforms are linux on x86_64 (with glibc) and linux on aarch64 (also 
+with glibc)
+
 ## This is a Hack
 In case it's not yet apparent, this is a hack, although someone might
 find it useful.  So, none of the testing has been ported over to the
