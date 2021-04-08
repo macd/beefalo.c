@@ -105,6 +105,7 @@
 #include "reader.h"
 #include "conflicts.h"
 #include "beefskel.h"
+#include "fmemopen.h"
 
 static int nvectors;
 static int nentries;

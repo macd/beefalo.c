@@ -36,7 +36,7 @@ LDADD = $(INTLLIBS) ../lib/libbison.a
 bin_PROGRAMS = beefalo
 
 beefalo_SOURCES = LR0.c beefskel.c closure.c complain.c conflicts.c	\
-    derives.c	\
+    derives.c fmemopen.c \
     files.c getargs.c gram.c lalr.c lex.c main.c nullable.c \
     output.h output.c \
     state.h state.c \
@@ -45,7 +45,7 @@ beefalo_SOURCES = LR0.c beefskel.c closure.c complain.c conflicts.c	\
 EXTRA_beefalo_SOURCES = vmsgetargs.c
 
 noinst_HEADERS = LR0.h beefskel.h closure.h complain.h conflicts.h \
- derives.h \
+ derives.h fmemopen.h \
  files.h getargs.h gram.h lalr.h lex.h nullable.h \
  print.h reader.h reduce.h symtab.h warshall.h system.h types.h \
  vcg.h vcg_defaults.h print_graph.h

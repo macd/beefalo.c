@@ -108,12 +108,12 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_beefalo_OBJECTS = LR0.$(OBJEXT) beefskel.$(OBJEXT) \
 	closure.$(OBJEXT) complain.$(OBJEXT) conflicts.$(OBJEXT) \
-	derives.$(OBJEXT) files.$(OBJEXT) getargs.$(OBJEXT) \
-	gram.$(OBJEXT) lalr.$(OBJEXT) lex.$(OBJEXT) main.$(OBJEXT) \
-	nullable.$(OBJEXT) output.$(OBJEXT) state.$(OBJEXT) \
-	print.$(OBJEXT) reader.$(OBJEXT) reduce.$(OBJEXT) \
-	symtab.$(OBJEXT) warshall.$(OBJEXT) vcg.$(OBJEXT) \
-	print_graph.$(OBJEXT)
+	derives.$(OBJEXT) fmemopen.$(OBJEXT) files.$(OBJEXT) \
+	getargs.$(OBJEXT) gram.$(OBJEXT) lalr.$(OBJEXT) lex.$(OBJEXT) \
+	main.$(OBJEXT) nullable.$(OBJEXT) output.$(OBJEXT) \
+	state.$(OBJEXT) print.$(OBJEXT) reader.$(OBJEXT) \
+	reduce.$(OBJEXT) symtab.$(OBJEXT) warshall.$(OBJEXT) \
+	vcg.$(OBJEXT) print_graph.$(OBJEXT)
 beefalo_OBJECTS = $(am_beefalo_OBJECTS)
 beefalo_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -136,9 +136,9 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/LR0.Po ./$(DEPDIR)/beefskel.Po \
 	./$(DEPDIR)/closure.Po ./$(DEPDIR)/complain.Po \
 	./$(DEPDIR)/conflicts.Po ./$(DEPDIR)/derives.Po \
-	./$(DEPDIR)/files.Po ./$(DEPDIR)/getargs.Po \
-	./$(DEPDIR)/gram.Po ./$(DEPDIR)/lalr.Po ./$(DEPDIR)/lex.Po \
-	./$(DEPDIR)/main.Po ./$(DEPDIR)/nullable.Po \
+	./$(DEPDIR)/files.Po ./$(DEPDIR)/fmemopen.Po \
+	./$(DEPDIR)/getargs.Po ./$(DEPDIR)/gram.Po ./$(DEPDIR)/lalr.Po \
+	./$(DEPDIR)/lex.Po ./$(DEPDIR)/main.Po ./$(DEPDIR)/nullable.Po \
 	./$(DEPDIR)/output.Po ./$(DEPDIR)/print.Po \
 	./$(DEPDIR)/print_graph.Po ./$(DEPDIR)/reader.Po \
 	./$(DEPDIR)/reduce.Po ./$(DEPDIR)/state.Po \
@@ -354,7 +354,7 @@ AM_CPPFLAGS = -I$(top_builddir)/intl \
 
 LDADD = $(INTLLIBS) ../lib/libbison.a
 beefalo_SOURCES = LR0.c beefskel.c closure.c complain.c conflicts.c	\
-    derives.c	\
+    derives.c fmemopen.c \
     files.c getargs.c gram.c lalr.c lex.c main.c nullable.c \
     output.h output.c \
     state.h state.c \
@@ -362,7 +362,7 @@ beefalo_SOURCES = LR0.c beefskel.c closure.c complain.c conflicts.c	\
 
 EXTRA_beefalo_SOURCES = vmsgetargs.c
 noinst_HEADERS = LR0.h beefskel.h closure.h complain.h conflicts.h \
- derives.h \
+ derives.h fmemopen.h \
  files.h getargs.h gram.h lalr.h lex.h nullable.h \
  print.h reader.h reduce.h symtab.h warshall.h system.h types.h \
  vcg.h vcg_defaults.h print_graph.h
@@ -462,6 +462,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conflicts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/derives.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/files.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fmemopen.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getargs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gram.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lalr.Po@am__quote@ # am--include-marker
@@ -654,6 +655,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/conflicts.Po
 	-rm -f ./$(DEPDIR)/derives.Po
 	-rm -f ./$(DEPDIR)/files.Po
+	-rm -f ./$(DEPDIR)/fmemopen.Po
 	-rm -f ./$(DEPDIR)/getargs.Po
 	-rm -f ./$(DEPDIR)/gram.Po
 	-rm -f ./$(DEPDIR)/lalr.Po
@@ -722,6 +724,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/conflicts.Po
 	-rm -f ./$(DEPDIR)/derives.Po
 	-rm -f ./$(DEPDIR)/files.Po
+	-rm -f ./$(DEPDIR)/fmemopen.Po
 	-rm -f ./$(DEPDIR)/getargs.Po
 	-rm -f ./$(DEPDIR)/gram.Po
 	-rm -f ./$(DEPDIR)/lalr.Po
