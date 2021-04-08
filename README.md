@@ -1,4 +1,4 @@
-# Beefalo, a Bison derivative that generates Julia parsers
+# Beefalo, an old Bison modified to produce Julia hosted parsers
 
 This is a modified version of an old bison (bison-1.35 circa 2002)
 that has been modified to generate parsers with Julia as the
