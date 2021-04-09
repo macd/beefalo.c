@@ -78,10 +78,17 @@ The best bet for generating a lexer in Julia at the present time seems to
 be the package Automa.jl (really a nice piece of work).
 
 ## Supported platforms
-Well, you might think that resurrecting a 20 year old autotools based 
-build might not go well and you would be right. So the only supported 
-platforms are linux on x86_64 (with glibc) and linux on aarch64 (also 
-with glibc)
+Well, you might guess that resurrecting a 20 year old autotools based
+build might not be smooth sailing and you would be right. Most of the
+autotools generated files were updated to more modern versions and
+some of the targets were dropped. The hold up for Windows and Mac was
+the availability of fmemopen. Found a fmemopen version on gitlab from
+the Ligo Finesse project (and it appears to be a well traveled piece of
+code). The build here is set up to be used by a Julia BinaryBuilder
+"build_tarballs.jl" script and supports the current set (Apr 2021) of
+supported_platforms()
+
+
 
 ## This is a Hack
 In case it's not yet apparent, this is a hack, although someone might
